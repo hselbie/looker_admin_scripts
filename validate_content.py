@@ -77,7 +77,12 @@ def parse_broken_content(base_url, broken_content, space_data):
     return output
 
 
-def sendContentOnce(**kwargs):
+def sendContentOnce(**kwargs):    
+    """helper function to generate the send the scheduled_plan_run_once
+        api end points
+    Returns:
+        [string]: [denoting finish]
+    """
     content_type = kwargs.get('content_type')
     content_id = kwargs.get('content_id')
     user_id = kwargs.get('user_id')
@@ -125,6 +130,16 @@ def sendContentOnce(**kwargs):
 
 
 def sendContentAlert(broken_content: list):
+    """takes in the value of the `parse broken content` function
+    iterates over this content and calls the sendContentOnce function
+    to send an email to the content owner of broken content
+
+    Args:
+        broken_content (list): [returned output of parse broken content function]
+
+    Returns:
+        [string]: [denoting completion]
+    """
     logging.debug('Initializing sendContentAlert')
     for content in range(0, len(broken_content)):
         logging.debug(broken_content[content]['content_type'])
@@ -146,7 +161,7 @@ def sendContentAlert(broken_content: list):
                 user_id=user_id,
                 user_email=user_email,
                 plan_id=content,
-                content_id=str(23),
+                content_id=BROKEN_DASHBOARD_CONTENT,
                 content_type='dashboard',
                 message=dashboard_message
             )
@@ -165,7 +180,7 @@ def sendContentAlert(broken_content: list):
                 user_id=user_id,
                 user_email=user_email,
                 plan_id=content,
-                content_id=16,
+                content_id=BROKEN_LOOK_CONTENT,
                 content_type='look',
                 message=look_message
             )
@@ -174,6 +189,15 @@ def sendContentAlert(broken_content: list):
 
 
 if __name__ == "__main__":
+
+    """Global Variables for the content to be sent (need simple always running
+    content to ensure that we can adjust the custom message as we nee to)
+    """
+    BROKEN_LOOK_CONTENT = 704
+    BROKEN_DASHBOARD_CONTENT = str(551)
+
+    """Boiler plate setup
+    """
     ini_file = '/usr/local/google/home/hugoselbie/code_sample/py/projects/ini/looker.ini'
     config = ConfigParser.RawConfigParser(allow_no_value=True)
     config.read(ini_file)
@@ -184,10 +208,14 @@ if __name__ == "__main__":
     content_with_errors = sdk.content_validation().content_with_errors
     space = get_space_data()
 
+    """Generating the broken content data
+    """
     broken_content = parse_broken_content(
         broken_content=content_with_errors,
         space_data=space,
-        base_url='https://34.94.128.147:9999'
+        base_url=config.get('Looker', 'base_url')
     )
 
-    print(sendContentAlert(broken_content=broken_content))
+    """Sending an alert to all content owners to do something with their content
+    """
+    sendContentAlert(broken_content=broken_content)
