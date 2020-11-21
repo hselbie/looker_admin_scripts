@@ -205,11 +205,12 @@ if __name__ == "__main__":
     github_token = config.get('Github', 'github_token')
     sdk = looker_sdk.init31(config_file=ini_file)
 
-    content_with_errors = sdk.content_validation().content_with_errors
-    space = get_space_data()
+
 
     """Generating the broken content data
     """
+    content_with_errors = sdk.content_validation().content_with_errors
+    space = get_space_data()
     broken_content = parse_broken_content(
         broken_content=content_with_errors,
         space_data=space,
